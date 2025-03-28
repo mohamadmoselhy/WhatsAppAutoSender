@@ -1,0 +1,28 @@
+Email Listener Documentation:
+
+
+Deployment Steps:
+
+1- Provide user named "EmailListener" access to process folder on orchestrator.
+
+2- Enter Python script exe file path in EmailListenerTrigger.bat file.
+
+3- In arguments, please type your arguments in EmailListenerTrigger.bat file (In EmailListenerTrigger.bat an example found).
+
+EmailListener_StartJob:
+	Please type arguments in the following sequence:
+	a- Mail_ Username			The mail username that reads emails from.
+	b- Mail_Password         		The mail Password that reads emails from.
+	c- Mail_folder_name	     		The mail folder to read emails from.
+	d- Mail_Sender           		The mail Sender filter to read emails.
+	e- Mail_Subject          		The mail subject filter to read emails.
+  	f- Mail_PreviousHours     		Number of Previous hours to read emails from. If entered 0, it will check all mailbox.
+  	g- Orchestrator_TenantName  		Name of orchestrator tenant where the process is deployed in.
+  	h- OrchestratorProcessReleaseKey	UiPath Orchestrator Process unique identifier.
+  	i- OrchestratorRobotID			UiPath Orchestrator Robot unique identifier.
+	j- OrchestratorMachineSessionID		UiPath Orchestrator Machine active session unique identifier.
+	k- OrchestratorFolderName		UiPath Orchestrator folder name.
+	l- OrchestratorJobInputArguments	UiPath Orchestrator Job Input Arguments.
+
+4- Trigger of Email listener
+Create a scheduled task using task scheduler to run every n mins to run the batch file created
