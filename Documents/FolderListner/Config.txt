@@ -1,0 +1,10 @@
+folder_to_watch=D:\My drive\Course\Data Science\Projects\Mostql\Test Folder
+contact_name=محاضر بين شركه X & شركه المتحدة
+name_field=C:\Program Files\FolderListner\NameField.PNG
+name_field2=C:\Program Files\FolderListner\NameField_2.PNG
+attachment=C:\Program Files\FolderListner\attachment.png
+document=C:\Program Files\FolderListner\Document.png
+whatsapp_images=C:\Program Files\FolderListner\whatsapp_images.PNG
+message_box=C:\Program Files\FolderListner\MessageBox.PNG
+message=أهلا اهلا اهلا مرحبا
+

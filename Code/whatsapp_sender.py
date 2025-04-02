@@ -46,7 +46,9 @@ def send_file_via_whatsapp(file_path):
             raise RuntimeError("Failed to open WhatsApp chat.")
 
         # 2- Search for the Contact
-        if not write_in_field(name_field, get_Contact_name(file_path)):
+        #if not write_in_field(name_field, get_Contact_name(file_path)):
+        #    raise ValueError("Failed to search for contact on WhatsApp chat.")
+        if not write_in_field(name_field, "محمد ابراهيم & محمد جدة"):
             raise ValueError("Failed to search for contact on WhatsApp chat.")
 
         # 3- Ask the user whether to send a message only or include an attachment

@@ -1,4 +1,4 @@
-folder_to_watch=D:\My drive\Course\Data Science\Projects\Mostql\Test Folder
+folder_to_watch=C:\Users\Lenovo\OneDrive - Giza Systems
 contact_name=محاضر بين شركه X & شركه المتحدة
 message=أهلا اهلا اهلا مرحبا
 name_field=D:\My drive\Course\Data Science\Projects\Mostql\NameField.PNG

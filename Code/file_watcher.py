@@ -43,19 +43,22 @@ class FileAddedHandler(FileSystemEventHandler):
 
 def monitor_folder(folder_to_watch):
     """Monitors a folder for new files and returns the detected file path."""
-    observer = None
     try:
-        event = threading.Event()
-        event_handler = FileAddedHandler(event)
-        observer = Observer()
-        observer.schedule(event_handler, folder_to_watch, recursive=True)
-        
+        previous_files = get_all_files(folder_to_watch)
         print(f"👀 Monitoring folder: {folder_to_watch}")
-        observer.start()
-
-        event.wait()  # Wait until a file is detected
-        return event_handler.new_file_path
-
+        
+        while True:
+            time.sleep(5)  # Check every 5 seconds
+            current_files = get_all_files(folder_to_watch)
+            new_files = current_files - previous_files
+            
+            if new_files:
+                for file in new_files:
+                    print(f"📂 New file detected: {file}")
+                    return file  # Return the first detected new file
+            
+            previous_files = current_files
+    
     except KeyboardInterrupt:
         print("🛑 Stopping file watcher...")
         return None
@@ -63,7 +66,14 @@ def monitor_folder(folder_to_watch):
         error_msg = f"⚠️ Unexpected error in monitor_folder: {e}"
         print(error_msg)
         raise RuntimeError(error_msg) from e  # Rethrow to allow higher-level handling
-    finally:
-        if observer:
-            observer.stop()
-            observer.join()
+
+def get_all_files(folder_path):
+    try:
+        file_paths = set()
+        for root, _, files in os.walk(folder_path):
+            for file in files:
+                file_paths.add(os.path.join(root, file))
+        return file_paths
+    except Exception as e:
+        print(f"Error while scanning files: {e}")
+        raise
