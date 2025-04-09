@@ -76,6 +76,7 @@ def get_user_choice():
 
 import subprocess
 import time
+import pyautogui
 
 def open_whatsapp_chat():
     """Opens WhatsApp Web in a new window in Microsoft Edge and maximizes the window."""
@@ -88,14 +89,18 @@ def open_whatsapp_chat():
         # Sleep to allow the window to load
         time.sleep(10)  # Adjust time based on your internet speed and system performance
         
-        # Maximize the window by sending a keyboard shortcut (Alt + Space, then X)
-        #subprocess.run('powershell -command "Add-Type -TypeDefinition \\"using System; using System.Runtime.InteropServices; public class Window{[DllImport(\\"user32.dll\\")] public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow); }\\";[Window]::ShowWindowAsync([System.Diagnostics.Process]::GetProcessesByName(\\"msedge\\")[0].MainWindowHandle, 3)"', shell=True)
+        # Simulate Alt + Space, then X to maximize the window
+        pyautogui.hotkey('alt', 'space')
+        time.sleep(1)  # Small delay to allow the menu to appear
+        pyautogui.press('x')  # Press 'X' to maximize the window
         
         return True
     except Exception as e:
         error_msg = f"[ERROR] Failed to open WhatsApp Web: {e}"
         print(error_msg)
         raise RuntimeError(error_msg) from e
+
+
 
 
 def ask_user_to_send_message():
