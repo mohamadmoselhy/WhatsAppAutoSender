@@ -9,6 +9,7 @@ Date: March 2025
 """
 
 import time
+import subprocess
 import webbrowser
 import pyautogui
 import pygetwindow as gw
@@ -73,17 +74,29 @@ def get_user_choice():
     finally:
         block_input()
 
+import subprocess
+import time
+
 def open_whatsapp_chat():
-    """Opens WhatsApp Web if not already open."""
+    """Opens WhatsApp Web in a new window in Microsoft Edge and maximizes the window."""
     try:
-        print("[INFO] Opening WhatsApp Web...")
-        webbrowser.open("https://web.whatsapp.com/")
-        time.sleep(15)  
+        print("[INFO] Opening WhatsApp Web in a new, maximized window in Microsoft Edge...")
+        
+        # Open WhatsApp Web in a new window in Microsoft Edge
+        subprocess.run(["start", "msedge", "--new-window", "https://web.whatsapp.com/"], shell=True)
+        
+        # Sleep to allow the window to load
+        time.sleep(10)  # Adjust time based on your internet speed and system performance
+        
+        # Maximize the window by sending a keyboard shortcut (Alt + Space, then X)
+        #subprocess.run('powershell -command "Add-Type -TypeDefinition \\"using System; using System.Runtime.InteropServices; public class Window{[DllImport(\\"user32.dll\\")] public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow); }\\";[Window]::ShowWindowAsync([System.Diagnostics.Process]::GetProcessesByName(\\"msedge\\")[0].MainWindowHandle, 3)"', shell=True)
+        
         return True
     except Exception as e:
         error_msg = f"[ERROR] Failed to open WhatsApp Web: {e}"
         print(error_msg)
         raise RuntimeError(error_msg) from e
+
 
 def ask_user_to_send_message():
     """Prompt the user to choose whether to send a message or skip."""

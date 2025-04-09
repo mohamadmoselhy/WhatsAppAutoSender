@@ -1,4 +1,3 @@
-import os
 
 # Path to your batch file
 config_file_path = "C:\Program Files\FolderListner\Config.txt"

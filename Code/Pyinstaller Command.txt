@@ -1,1 +1,1 @@
-"C:\Users\Lenovo\AppData\Roaming\Python\Python313\Scripts\pyinstaller.exe" --onefile --icon="D:\My drive\freeLance\WhatsAppAutoSender\FreeLance_WhatsAppAutoSender\Code\icon.ico" Main.py
+python -m PyInstaller --onefile --windowed --icon="D:\My drive\freeLance\WhatsAppAutoSender\FreeLance_WhatsAppAutoSender\Code\icon.ico" Main.py
