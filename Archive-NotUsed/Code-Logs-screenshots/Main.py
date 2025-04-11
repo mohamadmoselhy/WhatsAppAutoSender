@@ -1,53 +1,49 @@
 import logging
 import os
+from datetime import datetime
+import pyautogui
+import traceback
 import tkinter as tk
 from tkinter import messagebox
-from datetime import datetime
-from logging import StreamHandler, FileHandler, Formatter, getLogger
 
 # Set up logging
 log_dir = "logs"
 os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, f"app_log_{datetime.now().strftime('%Y-%m-%d')}.log")
 
-def setup_logger(log_name="app_log", log_dir="logs"):
-    import logging
-    import os
-    from datetime import datetime
-
-    os.makedirs(log_dir, exist_ok=True)
-    log_file = os.path.join(log_dir, f"{log_name}_{datetime.now().strftime('%Y-%m-%d')}.log")
-
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-
-    # Clear existing handlers if re-running in interactive environments
-    if logger.hasHandlers():
-        logger.handlers.clear()
-
-    # File handler with UTF-8 encoding for Arabic support
-    file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
-    file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-    logger.addHandler(file_handler)
-
-    # Optional: Console output
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-    logger.addHandler(stream_handler)
-
-    return logger
-
-logger = setup_logger()
+logging.basicConfig(
+    filename=log_file,
+    filemode='a',
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 logging.info("Starting the WhatsApp file automation script.")
 
 # Function to take a screenshot
+def take_screenshot(error_message):
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    screenshot_filename = f"screenshot_{timestamp}.png"
+    
+    # Capture screenshot
+    screenshot = pyautogui.screenshot()
+    
+    # Create a directory to save screenshots if it doesn't exist
+    if not os.path.exists("error_screenshots"):
+        os.makedirs("error_screenshots")
+    
+    # Save screenshot
+    screenshot.save(os.path.join("error_screenshots", screenshot_filename))
+    
+    # Log the error message with timestamp
+    with open("error_screenshots/error_log.txt", "a") as log_file:
+        log_file.write(f"{timestamp} - Error: {error_message}\n")
 
 try:
     from config import folder_to_watch
     from file_watcher import monitor_folder
     from whatsapp_sender import send_file_via_whatsapp
-    from whatsapp_utils import ask_user_to_send_message, close_whatsapp_tab,take_screenshot
+    from whatsapp_utils import ask_user_to_send_message, close_whatsapp_tab
     from input_control import block_input, unblock_input
 
 except ModuleNotFoundError as e:

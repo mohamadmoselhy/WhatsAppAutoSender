@@ -15,8 +15,7 @@ import sys
 import io
 
 # Ensure console and file output use UTF-8 (for Arabic/log readability)
-if sys.stdout and hasattr(sys.stdout, "buffer"):
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 # Logging configuration
 logging.basicConfig(

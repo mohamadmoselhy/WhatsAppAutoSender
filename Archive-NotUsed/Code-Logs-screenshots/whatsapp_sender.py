@@ -20,8 +20,7 @@ from whatsapp_utils import (
 )
 
 # Ensure stdout supports UTF-8 for Arabic names in logs
-if sys.stdout and hasattr(sys.stdout, "buffer"):
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 # Configure logging (file + console with UTF-8 support)
 logging.basicConfig(

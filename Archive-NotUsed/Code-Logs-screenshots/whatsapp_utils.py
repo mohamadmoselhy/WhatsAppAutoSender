@@ -18,7 +18,6 @@ import os
 import sys
 import ctypes
 import logging
-from datetime import datetime, timedelta
 from input_control import block_input, unblock_input
 from bidi.algorithm import get_display
 from config import folder_to_watch, contact_name, message, name_field, name_field2, attachment, document, whatsapp_images, message_box
@@ -81,7 +80,6 @@ def open_whatsapp_chat():
         pyautogui.hotkey('alt', 'space')
         time.sleep(1)
         pyautogui.press('x')
-        time.sleep(1)
         return True
     except Exception as e:
         logger.exception("Failed to open WhatsApp Web")
@@ -205,29 +203,3 @@ def send_message(message):
     except Exception as e:
         logger.exception("Failed to send message")
         raise RuntimeError("Failed to send message") from e
-
-def take_screenshot(error_message):
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    screenshot_filename = f"screenshot_{timestamp}.png"
-
-    # Create a directory to save screenshots if it doesn't exist
-    screenshots_dir = "error_screenshots"
-    if not os.path.exists(screenshots_dir):
-        os.makedirs(screenshots_dir)
-
-    # Remove screenshots older than 20 days
-    cutoff_date = datetime.now() - timedelta(days=20)
-    for filename in os.listdir(screenshots_dir):
-        file_path = os.path.join(screenshots_dir, filename)
-        if os.path.isfile(file_path) and filename.endswith(".png"):
-            file_modified_time = datetime.fromtimestamp(os.path.getmtime(file_path))
-            if file_modified_time < cutoff_date:
-                os.remove(file_path)
-
-    # Capture and save screenshot
-    screenshot = pyautogui.screenshot()
-    screenshot.save(os.path.join(screenshots_dir, screenshot_filename))
-
-    # Log the error message with timestamp
-    with open(os.path.join(screenshots_dir, "error_log.txt"), "a") as log_file:
-        log_file.write(f"{timestamp} - Error: {error_message}\n")
