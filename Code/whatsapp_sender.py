@@ -35,22 +35,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_Contact_name(file_path):
-    try:
-        if not isinstance(file_path, str) or not file_path:
-            raise ValueError("Invalid file path provided.")
-
-        folder_name = os.path.basename(os.path.dirname(file_path))
-
-        if not folder_name:
-            raise FileNotFoundError("Could not determine folder name from the provided path.")
-
-        return folder_name
-
-    except Exception as e:
-        logger.error(f"Failed to extract contact name from path: {e}")
-        raise
-
+def get_Contact_name(path, keyword="منظورة تجربة"):
+    parts = path.split(os.sep)
+    if keyword in parts:
+        index = parts.index(keyword)
+        if index + 1 < len(parts):
+            return parts[index + 1]
+    return None
 
 def send_file_via_whatsapp(file_path):
     """Handles sending a message and optionally sending a file via WhatsApp Web."""
@@ -62,8 +53,8 @@ def send_file_via_whatsapp(file_path):
             raise RuntimeError("Failed to open WhatsApp chat.")
 
         # 2- Search for the Contact
-        # contact_name = get_Contact_name(file_path)
-        if not write_in_field(name_field, "محمد ابراهيم & محمد جدة"):
+        contact_name = get_Contact_name(file_path)
+        if not write_in_field(name_field, contact_name):
             raise ValueError("Failed to search for contact on WhatsApp chat.")
 
         # 3- Ask user whether to send message only or include file
