@@ -1,0 +1,20 @@
+default_contact: Default Contact
+folder_to_watch: C:\Users\Lenovo\OneDrive - Giza Systems\قضايا التحكيم\منظورة تجربة
+images:
+  attachment: resources/images/attachment.png
+  document: resources/images/document.png
+  message_box: resources/images/message_box.png
+  search_field_image: resources/images/search_field.png
+  search_input: resources/images/search_input.png
+  search_input2: resources/images/search_input2.png
+  whatsapp_images: resources/images/whatsapp_images.png
+logging:
+  backup_count: 5
+  format: '%(asctime)s - %(levelname)s - %(message)s'
+  level: INFO
+  max_size: 10485760
+message: Please find the attached file
+retry_attempts: 3
+retry_delay: 5
+timeout: 30
+wait_time: 2

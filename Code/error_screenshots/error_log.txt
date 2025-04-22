@@ -1,3 +1,0 @@
-2025-04-11_10-55-03 - Error: An error occurred: Error in send_file_via_whatsapp: Failed to write in field
-2025-04-11_10-56-23 - Error: An error occurred: Error in send_file_via_whatsapp: Failed to send message: Failed to send message
-2025-04-11_10-58-10 - Error: An error occurred: Error in send_file_via_whatsapp: Failed to write in field
