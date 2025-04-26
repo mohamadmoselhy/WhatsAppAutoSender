@@ -50,7 +50,7 @@ class WhatsAppSender:
             contact_name = self._get_contact_name(file_path)
 
             # Prepare message
-            Folder_Name_Encoded = urllib.parse.quote_plus(contact_name)
+            Folder_Name_Encoded = urllib.parse.quote(contact_name)
             full_sharepoint_path = config.root_path + "/" + Folder_Name_Encoded
             #message = f"New file is ready: {full_sharepoint_path}"
 

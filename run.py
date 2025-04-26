@@ -15,7 +15,7 @@ from src.whatsapp.sender import WhatsAppSender
 def process_file(file_path: str):
     """Process a file by sending it via WhatsApp with retry mechanism"""
     max_retries = 5
-    delay_seconds = 5
+    delay_seconds = 3
 
     for attempt in range(1, max_retries + 1):
         try:

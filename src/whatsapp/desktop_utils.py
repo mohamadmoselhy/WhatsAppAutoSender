@@ -127,11 +127,14 @@ class WhatsAppDesktop:
                 if not chat_list.exists():
                     logger.log_error(None, "Could not find chat list")
                     return False
+                
 
                 # Find the contact using TextBlock with wildcard name matching
                 contact_element = chat_list.child_window(
                     auto_id="Title",
                     class_name="TextBlock",
+                    top_level_only=False,
+                    found_index=0,
                     title_re=f".*{contact_name}.*"
                 )
 
@@ -147,7 +150,7 @@ class WhatsAppDesktop:
                         contact_element.click_input()
                         time.sleep(2)
                         return True
-                
+                    
                 logger.log_error(None, f"Could not find contact: {contact_name}")
                 return False
                 
@@ -184,7 +187,8 @@ class WhatsAppDesktop:
 
             # Copy the message to clipboard
             pyperclip.copy(message)
-
+            logger.log_info(f"Message copied to clipboard: {message}")
+            
             # Paste the message
             message_box.click_input()  # Make sure the box is focused
             time.sleep(0.5)
