@@ -13,19 +13,32 @@ from src.core.file_watcher import FileWatcher
 from src.whatsapp.sender import WhatsAppSender
 
 def process_file(file_path: str):
-    """Process a file by sending it via WhatsApp"""
-    try:
-        logger.log_info(f"Processing file: {file_path}")
-        
-        # Send the file notification
-        sender = WhatsAppSender()
-        if sender.notify_file_ready(file_path):
-            logger.log_info(f"Successfully sent notification for file: {file_path}")
-        else:
-            logger.log_error(None, f"Failed to send notification for file: {file_path}")
-            
-    except Exception as e:
-        logger.log_error(e, f"Error processing file {file_path}")
+    """Process a file by sending it via WhatsApp with retry mechanism"""
+    max_retries = 5
+    delay_seconds = 5
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            logger.log_info(f"Processing file: {file_path} (Attempt {attempt})")
+
+            # Send the file notification
+            sender = WhatsAppSender()
+            if sender.notify_file_ready(file_path):
+                logger.log_info(f"Successfully sent notification for file: {file_path}")
+                break  # Success, exit the loop
+            else:
+                logger.log_error(None, f"Failed to send notification for file: {file_path}")
+                if attempt < max_retries:
+                    time.sleep(delay_seconds)
+                else:
+                    logger.log_error(None, f"All {max_retries} attempts failed for file: {file_path}")
+
+        except Exception as e:
+            logger.log_error(e, f"Error processing file {file_path} on attempt {attempt}")
+            if attempt < max_retries:
+                time.sleep(delay_seconds)
+            else:
+                logger.log_error(e, f"All {max_retries} attempts raised errors for file: {file_path}")
 
 def main():
     """Main function to start the file watcher"""

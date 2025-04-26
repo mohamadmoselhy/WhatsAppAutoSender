@@ -12,6 +12,7 @@ from pywinauto.keyboard import send_keys
 from pywinauto.timings import wait_until
 import pyperclip
 import time
+from pywinauto.keyboard import send_keys
 
 from src.core.logger import logger
 
@@ -186,8 +187,8 @@ class WhatsAppDesktop:
 
             # Paste the message
             message_box.click_input()  # Make sure the box is focused
-            time.sleep(0.1)
-            message_box.type_keys('^v')  # CTRL+V to paste
+            time.sleep(0.5)
+            send_keys('^v')  # CTRL+V using send_keys
             time.sleep(0.5)
             
             # Find and click the send button
