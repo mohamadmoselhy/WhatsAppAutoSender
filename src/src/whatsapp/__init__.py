@@ -1,3 +1,0 @@
-"""
-WhatsApp automation functionality
-""" 

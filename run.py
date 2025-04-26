@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 """
 WhatsApp Auto Sender - Direct File Sender
 Automatically monitors folder and sends files via WhatsApp

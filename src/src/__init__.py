@@ -1,3 +1,0 @@
-"""
-WhatsApp Auto Sender package
-""" 
