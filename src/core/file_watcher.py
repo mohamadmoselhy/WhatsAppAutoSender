@@ -1,109 +1,98 @@
 """
-File watching functionality for WhatsApp Auto Sender
+File watcher module for monitoring directory changes
 """
 
 import os
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+import time
+from pathlib import Path
 from typing import Callable
-import re
-
-from src.core.config import config
+from src.core.constants import *
 from src.core.logger import logger
 
-class FileHandler(FileSystemEventHandler):
-    def __init__(self, callback: Callable[[str], None], main_folder: str):
-        self.callback = callback
-        self.main_folder = main_folder
-
-    def is_temporary_file(self, file_path: str) -> bool:
-        """Check if the file is a temporary file"""
-        if not file_path:
-            return False
-        file_name = os.path.basename(file_path)
-        if not file_name:
-            return False
-
-        # Excel temporary file patterns
-        temp_patterns = [
-            r'^~\$.*\.xlsx$',           # Excel lock files (e.g., ~$Document.xlsx)
-            r'^~.*\.tmp$',              # Starts with ~, ends with .tmp
-            r'.*\.tmp$',                # Ends with .tmp
-            r'.*\.TMP$',                # Ends with .TMP
-            r'.*\.xlsx~RF[0-9a-f]+\.TMP$' # Excel autosave/recovery pattern
-        ]
-
-        for pattern in temp_patterns:
-            if re.match(pattern, file_name, re.IGNORECASE):
-                logger.log_info(f"Detected temporary file: {file_name}")
-                return True
-        return False
-
-    def is_in_subfolder(self, file_path: str) -> bool:
-        """Check if the file is in a subfolder of the main folder"""
-        if not file_path:
-            return False
-            
-        # Get the relative path from the main folder
-        try:
-            rel_path = os.path.relpath(file_path, self.main_folder)
-            # If the relative path contains a directory separator, it's in a subfolder
-            return os.sep in rel_path
-        except ValueError:
-            # If the file is not under the main folder, return False
-            return False
-
-    def on_created(self, event):
-        """Handle file creation events"""
-        if not event.is_directory:
-            file_path = event.src_path
-            
-            # Skip if it's a temporary file
-            if self.is_temporary_file(file_path):
-                logger.log_info(f"Skipping temporary file: {file_path}")
-                return
-                
-            # Skip if the file is directly in the main folder
-            if not self.is_in_subfolder(file_path):
-                logger.log_info(f"Skipping file in main folder: {file_path}")
-                return
-                
-            logger.log_info(f"File created in subfolder: {file_path}")
-            self.callback(file_path)
-
 class FileWatcher:
-    def __init__(self, folder_path: str, callback: Callable[[str], None]):
-        self.folder_path = folder_path
+    def __init__(self, directory: str, callback: Callable[[str], None]):
+        """
+        Initialize file watcher
+        
+        Args:
+            directory: Directory to watch
+            callback: Function to call when a file is found. This should be a function
+                     that processes the file, such as sending it via WhatsApp.
+        """
+        self.directory = Path(directory)
         self.callback = callback
-        self.observer = None
+        self.running = False
+        self.processed_files = set()
+        logger.log_info(f"File watcher initialized for directory: {directory}")
 
-    def start(self) -> None:
-        """Start watching the folder"""
+    def start(self):
+        """Start watching the directory"""
         try:
-            if not os.path.exists(self.folder_path):
-                os.makedirs(self.folder_path, exist_ok=True)
-                logger.log_info(f"Created folder: {self.folder_path}")
+            if not self.directory.exists():
+                logger.log_error(None, f"Directory does not exist: {self.directory}")
+                return
 
-            handler = FileHandler(self.callback, self.folder_path)
-            self.observer = Observer()
-            self.observer.schedule(handler, self.folder_path, recursive=True)
-            self.observer.start()
-            logger.log_info(f"Started watching folder and subfolders: {self.folder_path}")
+            self.running = True
+            logger.log_info("File watcher started")
+            
+            while self.running:
+                try:
+                    self._check_files()
+                    time.sleep(FILE_CHECK_INTERVAL)
+                except Exception as e:
+                    logger.log_error(e, "Error in file watcher loop")
+                    time.sleep(ERROR_WAIT_TIME)
+                    raise
+                    
         except Exception as e:
-            logger.log_error(e, f"Error starting file watcher")
+            logger.log_error(e, "Failed to start file watcher")
             raise
 
-    def stop(self) -> None:
-        """Stop watching the folder"""
-        try:
-            if self.observer:
-                self.observer.stop()
-                self.observer.join()
-                self.observer = None
-                logger.log_info(f"Stopped watching folder: {self.folder_path}")
-        except Exception as e:
-            logger.log_error(e, f"Error stopping file watcher")
-            raise
+    def stop(self):
+        """Stop watching the directory"""
+        self.running = False
+        logger.log_info("File watcher stopped")
 
-# Create global watcher instance
-watcher = FileWatcher(config.folder_to_watch, lambda x: None) 
+    def _check_files(self):
+        """Check for new files in the directory"""
+        try:
+            current_time = time.time()
+            
+            # First, get all subfolders
+            subfolders = [f for f in self.directory.iterdir() if f.is_dir()]
+            logger.log_debug(f"Found {len(subfolders)} subfolders in {self.directory}")
+            
+            # Check each subfolder
+            for subfolder in subfolders:
+                try:
+                    # Check each file pattern in the subfolder
+                    for pattern in FILE_PATTERNS:
+                        for file_path in subfolder.glob(pattern):
+                            try:
+                                # Skip if file is too old
+                                file_age = current_time - file_path.stat().st_mtime
+                                if file_age > MAX_FILE_AGE:
+                                    logger.log_debug(f"Skipping old file: {file_path} (age: {file_age:.1f}s)")
+                                    continue
+
+                                # Skip if already processed
+                                if str(file_path) in self.processed_files:
+                                    continue
+
+                                # Process the file
+                                logger.log_info(f"Found new file in subfolder: {file_path}")
+                                self.callback(str(file_path))
+                                self.processed_files.add(str(file_path))
+                                logger.log_info(f"File processed successfully: {file_path}")
+
+                            except Exception as e:
+                                logger.log_error(e, f"Error processing file: {file_path}")
+                                raise
+
+                except Exception as e:
+                    logger.log_error(e, f"Error checking subfolder: {subfolder}")
+                    raise
+
+        except Exception as e:
+            logger.log_error(e, "Error checking files")
+            raise

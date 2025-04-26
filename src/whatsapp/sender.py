@@ -41,7 +41,7 @@ class WhatsAppSender:
         except Exception as e:
             logger.log_error(e, f"Failed to send message to {contact_name}")
             self.whatsapp.close_application()
-            return False
+            raise 
 
     def notify_file_ready(self, file_path: str) -> bool:
         """Notify contact about a file being ready"""
@@ -82,7 +82,7 @@ class WhatsAppSender:
         except Exception as e:
             logger.log_error(e, f"Failed to notify about file {file_path}")
             self.whatsapp.close_application()
-            return False
+            raise
 
     def _get_contact_name(self, file_path: str) -> str:
         """Extract contact name from file path"""
@@ -98,10 +98,10 @@ class WhatsAppSender:
                 return path.stem.split("_")[0]
                 
             # Case 3: Use default contact
-            return config.default_contact
+            return False
             
         except Exception:
-            return config.default_contact
+            raise
 
 # Create global sender instance
 sender = WhatsAppSender()

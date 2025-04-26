@@ -11,10 +11,11 @@ from src.core.config import config
 from src.core.logger import logger
 from src.core.file_watcher import FileWatcher
 from src.whatsapp.sender import WhatsAppSender
+from src.core.screenshot_utils import take_screenshot
 
 def process_file(file_path: str):
     """Process a file by sending it via WhatsApp with retry mechanism"""
-    max_retries = 5
+    max_retries = 1
     delay_seconds = 3
 
     for attempt in range(1, max_retries + 1):
@@ -32,6 +33,7 @@ def process_file(file_path: str):
                     time.sleep(delay_seconds)
                 else:
                     logger.log_error(None, f"All {max_retries} attempts failed for file: {file_path}")
+                    take_screenshot("Error")
 
         except Exception as e:
             logger.log_error(e, f"Error processing file {file_path} on attempt {attempt}")
@@ -39,6 +41,7 @@ def process_file(file_path: str):
                 time.sleep(delay_seconds)
             else:
                 logger.log_error(e, f"All {max_retries} attempts raised errors for file: {file_path}")
+                take_screenshot("file_check_error")
 
 def main():
     """Main function to start the file watcher"""

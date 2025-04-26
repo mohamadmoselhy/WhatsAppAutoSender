@@ -27,7 +27,7 @@ def ask_user_to_send_message() -> bool:
         return True
     except Exception as e:
         logger.log_error(e, "Error in ask_user_to_send_message")
-        return False
+        raise
 
 def take_screenshot(error: Optional[Exception] = None) -> str:
     """
@@ -51,7 +51,7 @@ def take_screenshot(error: Optional[Exception] = None) -> str:
         return screenshot_path
     except Exception as e:
         logger.log_error(e, "Failed to take screenshot")
-        return ""
+        raise
 
 def wait_for_qr_scan() -> bool:
     """
@@ -80,7 +80,7 @@ def wait_for_qr_scan() -> bool:
                 if qr_code:
                     break
             except TimeoutException:
-                continue
+                raise
         
         if qr_code:
             logger.log_info("Please scan the QR code to login to WhatsApp Web")
@@ -99,7 +99,7 @@ def wait_for_qr_scan() -> bool:
                 return True
             except TimeoutException:
                 logger.log_error(None, "Could not find QR code or chat list")
-                return False
+                raise
         
         # Wait for chat list to appear
         WebDriverWait(driver, 60).until(
@@ -111,10 +111,10 @@ def wait_for_qr_scan() -> bool:
         
     except TimeoutException:
         logger.log_error(None, "QR code scan timed out")
-        return False
+        raise
     except Exception as e:
         logger.log_error(e, "Error during QR code scan")
-        return False
+        raise
 
 def wait_for_element(selector: str, timeout: Optional[int] = None) -> bool:
     """
@@ -133,7 +133,7 @@ def wait_for_element(selector: str, timeout: Optional[int] = None) -> bool:
         )
         return True
     except TimeoutException:
-        return False
+        raise
 
 def click_element(image_path: str, timeout: int = 10) -> bool:
     """
@@ -150,7 +150,7 @@ def click_element(image_path: str, timeout: int = 10) -> bool:
         return False
     except Exception as e:
         logger.log_error(e, f"Error clicking element: {image_path}")
-        return False
+        raise
 
 def type_message(message: str) -> bool:
     """
@@ -162,7 +162,7 @@ def type_message(message: str) -> bool:
         return True
     except Exception as e:
         logger.log_error(e, "Error typing message")
-        return False
+        raise
 
 def press_enter() -> bool:
     """
@@ -174,7 +174,7 @@ def press_enter() -> bool:
         return True
     except Exception as e:
         logger.log_error(e, "Error pressing Enter")
-        return False
+        raise
 
 def get_user_choice() -> bool:
     """
@@ -187,7 +187,7 @@ def get_user_choice() -> bool:
         return True
     except Exception as e:
         logger.log_error(e, "Error in get_user_choice")
-        return False
+        raise
 
 def send_file(file_path: str) -> bool:
     """
@@ -210,7 +210,7 @@ def send_file(file_path: str) -> bool:
         return True
     except Exception as e:
         logger.log_error(e, "Error sending file")
-        return False
+        raise
 
 def write_in_field(text: str) -> bool:
     """
@@ -222,7 +222,7 @@ def write_in_field(text: str) -> bool:
         return True
     except Exception as e:
         logger.log_error(e, "Error writing in field")
-        return False
+        raise
 
 def locate_image(image_path: str, timeout: int = 10) -> Optional[Tuple[int, int, int, int]]:
     """
@@ -242,7 +242,7 @@ def locate_image(image_path: str, timeout: int = 10) -> Optional[Tuple[int, int,
         return None
     except Exception as e:
         logger.log_error(e, f"Error locating image: {image_path}")
-        return None
+        raise
 
 def clear_the_existing_data() -> bool:
     """
@@ -255,7 +255,7 @@ def clear_the_existing_data() -> bool:
         return True
     except Exception as e:
         logger.log_error(e, "Error clearing input field")
-        return False
+        raise
 
 def open_whatsapp_chat(contact_name: str) -> bool:
     """
@@ -297,7 +297,7 @@ def open_whatsapp_chat(contact_name: str) -> bool:
         return True
     except (TimeoutException, NoSuchElementException) as e:
         logger.log_error(e, f"Failed to open chat with {contact_name}")
-        return False
+        raise
 
 def attach_file(file_path: str) -> bool:
     """
@@ -336,7 +336,7 @@ def attach_file(file_path: str) -> bool:
         return True
     except (TimeoutException, NoSuchElementException) as e:
         logger.log_error(e, f"Failed to attach file {file_path}")
-        return False
+        raise
 
 def send_message(message: str) -> bool:
     """
@@ -361,7 +361,7 @@ def send_message(message: str) -> bool:
         return True
     except (TimeoutException, NoSuchElementException) as e:
         logger.log_error(e, "Failed to send message")
-        return False
+        raise
 
 def close_whatsapp_tab() -> bool:
     """
@@ -375,7 +375,7 @@ def close_whatsapp_tab() -> bool:
         return True
     except Exception as e:
         logger.log_error(e, "Error closing WhatsApp tab")
-        return False
+        raise
 
 # Global driver instance
 driver: Optional[webdriver.Chrome] = None
@@ -407,7 +407,7 @@ def initialize_driver() -> bool:
         return True
     except Exception as e:
         logger.log_error(e, "Failed to initialize WebDriver")
-        return False
+        raise
 
 def close_driver() -> None:
     """Close the Chrome WebDriver"""

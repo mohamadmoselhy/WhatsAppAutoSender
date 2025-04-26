@@ -1,92 +1,87 @@
 """
-Configuration management for WhatsApp Auto Sender
+Configuration module for WhatsApp Auto Sender
 """
 
 import os
-import yaml
-from typing import Dict, Any
 from pathlib import Path
+from src.core.constants import *
+from src.core.logger import logger
 
 class Config:
-    def __init__(self, config_path: str = "resources/config.yaml"):
-        self.config_path = config_path
-        self.config: Dict[str, Any] = {}
-        self.load_config()
+    def __init__(self):
+        self._setup_paths()
+        self._setup_logging()
+        self._setup_file_watching()
+        self._setup_message_template()
+        self._validate_config()
 
-    def load_config(self) -> None:
-        """Load configuration from YAML file"""
+    def _setup_paths(self):
+        """Setup file system paths"""
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
-                self.config = yaml.safe_load(f)
-            self.validate_config()
-        except FileNotFoundError:
-            self.create_default_config()
+            # Base paths
+            self.base_dir = Path(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+            self.folder_to_watch =  DEFAULT_FOLDER_TO_WATCH
+            self.TempMessageForGroupPath = os.path.abspath(DEFAULT_TEMP_MESSAGE_PATH)
+            self.root_path = DEFAULT_ROOT_PATH
+
+            # Create necessary directories
+            os.makedirs(self.folder_to_watch, exist_ok=True)
+            logger.log_info(f"Created/verified folder to watch: {self.folder_to_watch}")
+
         except Exception as e:
-            raise RuntimeError(f"Failed to load configuration: {e}")
+            logger.log_error(e, "Failed to setup paths")
+            raise
 
-    def validate_config(self) -> None:
+    def _setup_logging(self):
+        """Setup logging configuration"""
+        try:
+            self.log_level = LOG_LEVEL
+            self.log_format = LOG_FORMAT
+            self.log_date_format = LOG_DATE_FORMAT
+            logger.log_info("Logging configuration loaded")
+        except Exception as e:
+            logger.log_error(e, "Failed to setup logging")
+            raise
+
+    def _setup_file_watching(self):
+        """Setup file watching configuration"""
+        try:
+            self.file_check_interval = FILE_CHECK_INTERVAL
+            self.max_file_age = MAX_FILE_AGE
+            self.file_patterns = FILE_PATTERNS
+            logger.log_info("File watching configuration loaded")
+        except Exception as e:
+            logger.log_error(e, "Failed to setup file watching")
+            raise
+
+    def _setup_message_template(self):
+        """Setup message template configuration"""
+        try:
+            self.message_placeholders = MESSAGE_PLACEHOLDERS
+            self.message = os.path.exists(self.TempMessageForGroupPath)
+            if self.message:
+                logger.log_info(f"Message template found at: {self.TempMessageForGroupPath}")
+            else:
+                logger.log_warning(f"No message template found at: {self.TempMessageForGroupPath}")
+        except Exception as e:
+            logger.log_error(e, "Failed to setup message template")
+            raise
+
+    def _validate_config(self):
         """Validate the configuration"""
-        required_fields = [
-            'folder_to_watch',
-            'TempMessageForGroupPath',
-            'retry_attempts',
-            'retry_delay',
-            'timeout',
-            'wait_time'
-        ]
-        
-        for field in required_fields:
-            if field not in self.config:
-                raise ValueError(f"Missing required configuration field: {field}")
-        
-    def create_default_config(self) -> None:
-        """Create default configuration file"""
-        default_config = {
-            'folder_to_watch': 'C:\\Users\\Lenovo\\OneDrive - Giza Systems\\قضايا التحكيم\\منظورة تجربة',
-            'root_path': "https://gizasystems-my.sharepoint.com/personal/mohamed_moselhy_gizasystems_com/Documents/%D9%82%D8%B6%D8%A7%D9%8A%D8%A7%20%D8%A7%D9%84%D8%AA%D8%AD%D9%83%D9%8A%D9%85/%D9%85%D9%86%D8%B8%D9%88%D8%B1%D8%A9%20%D8%AA%D8%AC%D8%B1%D8%A8%D8%A9",
-            'retry_attempts': 3,
-            'retry_delay': 5,
-            'timeout': 30,
-            'wait_time': 2,
-            'logging': {
-                'level': 'INFO',
-                'format': '%(asctime)s - %(levelname)s - %(message)s',
-                'max_size': 10485760,  # 10MB
-                'backup_count': 5
-            },
-            'TempMessageForGroupPath': r'src\MessageTemplates\NotificationToGroup.txt'
-        }
+        try:
+            # Validate paths
+            if not os.path.exists(self.folder_to_watch):
+                raise FileNotFoundError(f"Folder to watch does not exist: {self.folder_to_watch}")
 
-        
-        os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
-        with open(self.config_path, 'w', encoding='utf-8') as f:
-            yaml.dump(default_config, f, default_flow_style=False)
-        
-        self.config = default_config
+            # Validate message template if enabled
+            if self.message and not os.path.exists(self.TempMessageForGroupPath):
+                raise FileNotFoundError(f"Message template not found: {self.TempMessageForGroupPath}")
 
-    def get(self, key: str, default: Any = None) -> Any:
-        """Get configuration value with optional default"""
-        return self.config.get(key, default)
-
-    def __getattr__(self, name: str) -> Any:
-        """Allow direct access to config values as attributes"""
-        if name in self.config:
-            return self.config[name]
-        raise AttributeError(f"Configuration has no attribute '{name}'")
-
-    def read_value(self, key: str, default: Any = None) -> Any:
-        """Method to directly read a config value"""
-        return self.config.get(key, default)
-
-    def set_value(self, key: str, value: Any) -> None:
-        """Method to set a new value in the config"""
-        self.config[key] = value
-        self.save_config()
-
-    def save_config(self) -> None:
-        """Save the updated configuration to the YAML file"""
-        with open(self.config_path, 'w', encoding='utf-8') as f:
-            yaml.dump(self.config, f, default_flow_style=False)
+            logger.log_info("Configuration validated successfully")
+        except Exception as e:
+            logger.log_error(e, "Configuration validation failed")
+            raise
 
 # Create global config instance
 config = Config()
