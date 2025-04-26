@@ -46,10 +46,8 @@ class WhatsAppSender:
             contact_name = self._get_contact_name(file_path)
 
             # Prepare message
-            root_path = "https://gizasystems-my.sharepoint.com/personal/mohamed_moselhy_gizasystems_com/Documents/%D9%82%D8%B6%D8%A7%D9%8A%D8%A7%20%D8%A7%D9%84%D8%AA%D8%AD%D9%83%D9%8A%D9%85/%D9%85%D9%86%D8%B8%D9%88%D8%B1%D8%A9%20%D8%AA%D8%AC%D8%B1%D8%A8%D8%A9"
-            Folder_Name = "%D8%AA%D8%AC%D8%B1%D8%A8%D8%A9%201"
-            full_sharepoint_path = root_path + "/" + Folder_Name
-            message = f"New file is ready: {full_sharepoint_path}"
+            file_name = Path(file_path).name
+            message = f"New file is ready: {file_name}"
             if config.message:
                 message = f"{config.message}\n{message}"
 

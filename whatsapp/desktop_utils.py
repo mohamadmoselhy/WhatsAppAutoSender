@@ -10,8 +10,6 @@ from pywinauto.application import Application
 from pywinauto.findwindows import find_windows
 from pywinauto.keyboard import send_keys
 from pywinauto.timings import wait_until
-import pyperclip
-import time
 
 from src.core.logger import logger
 
@@ -175,19 +173,14 @@ class WhatsAppDesktop:
                 logger.log_error(None, "Could not find message input box")
                 return False
                 
-            # Focus and clear existing text
+            # Type message
             message_box.set_focus()
             time.sleep(0.5)
-            message_box.type_keys('^a{BACKSPACE}')  # Select all and delete
+            
+            message_box.type_keys('^a{BACKSPACE}')  # Clear existing text
             time.sleep(0.5)
-
-            # Copy the message to clipboard
-            pyperclip.copy(message)
-
-            # Paste the message
-            message_box.click_input()  # Make sure the box is focused
-            time.sleep(0.1)
-            message_box.type_keys('^v')  # CTRL+V to paste
+            
+            message_box.type_keys(message, with_spaces=True)
             time.sleep(0.5)
             
             # Find and click the send button
@@ -207,4 +200,4 @@ class WhatsAppDesktop:
             
         except Exception as e:
             logger.log_error(e, "Failed to send message")
-            return False
+            return False 
