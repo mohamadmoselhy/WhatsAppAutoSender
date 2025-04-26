@@ -1,22 +1,14 @@
-default_contact: Default Contact
+TempMessageForGroupPath: src\MessageTemplates\NotificationToGroup.txt
 folder_to_watch: "C:\\Users\\Lenovo\\OneDrive - Giza Systems\\\u0642\u0636\u0627\u064A\
   \u0627 \u0627\u0644\u062A\u062D\u0643\u064A\u0645\\\u0645\u0646\u0638\u0648\u0631\
   \u0629 \u062A\u062C\u0631\u0628\u0629"
-images:
-  attachment: resources/images/attachment.png
-  document: resources/images/document.png
-  message_box: resources/images/message_box.png
-  search_field_image: resources/images/search_field.png
-  search_input: resources/images/search_input.png
-  search_input2: resources/images/search_input2.png
-  whatsapp_images: resources/images/whatsapp_images.png
 logging:
   backup_count: 5
   format: '%(asctime)s - %(levelname)s - %(message)s'
   level: INFO
   max_size: 10485760
-message: Please find the attached file
 retry_attempts: 3
 retry_delay: 5
+root_path: https://gizasystems-my.sharepoint.com/personal/mohamed_moselhy_gizasystems_com/Documents/%D9%82%D8%B6%D9%8A%D8%A7%D9%8A%D8%A7%20%D8%A7%D9%84%D8%AA%D8%AD%D9%83%D9%8A%D9%85/%D9%85%D9%86%D9%8F%D8%B8%D9%88%D8%B1%D9%8E%D8%A9%20%D8%AA%D8%AC%D8%B1%D8%A8%D8%A9
 timeout: 30
 wait_time: 2

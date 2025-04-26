@@ -28,9 +28,7 @@ class Config:
         """Validate the configuration"""
         required_fields = [
             'folder_to_watch',
-            'default_contact',
-            'message',
-            'images',
+            'TempMessageForGroupPath',
             'retry_attempts',
             'retry_delay',
             'timeout',
@@ -40,39 +38,12 @@ class Config:
         for field in required_fields:
             if field not in self.config:
                 raise ValueError(f"Missing required configuration field: {field}")
-
-        # Validate images configuration
-        required_images = [
-            'search_field_image',
-            'search_input',
-            'attachment',
-            'document',
-            'whatsapp_images',
-            'message_box'
-        ]
         
-        if 'images' not in self.config:
-            raise ValueError("Missing 'images' configuration section")
-            
-        for image in required_images:
-            if image not in self.config['images']:
-                raise ValueError(f"Missing required image configuration: {image}")
-
     def create_default_config(self) -> None:
         """Create default configuration file"""
         default_config = {
             'folder_to_watch': 'C:\\Users\\Lenovo\\OneDrive - Giza Systems\\قضايا التحكيم\\منظورة تجربة',
-            'default_contact': 'Default Contact',
-            'message': 'Please find the attached file',
-            'images': {
-                'search_field_image': 'resources/images/search_field.png',
-                'search_input': 'resources/images/search_input.png',
-                'search_input2': 'resources/images/search_input2.png',
-                'attachment': 'resources/images/attachment.png',
-                'document': 'resources/images/document.png',
-                'whatsapp_images': 'resources/images/whatsapp_images.png',
-                'message_box': 'resources/images/message_box.png'
-            },
+            'root_path': "https://gizasystems-my.sharepoint.com/personal/mohamed_moselhy_gizasystems_com/Documents/%D9%82%D8%B6%D9%8A%D8%A7%D9%8A%D8%A7%20%D8%A7%D9%84%D8%AA%D8%AD%D9%83%D9%8A%D9%85/%D9%85%D9%86%D9%8F%D8%B8%D9%88%D8%B1%D9%8E%D8%A9%20%D8%AA%D8%AC%D8%B1%D8%A8%D8%A9",
             'retry_attempts': 3,
             'retry_delay': 5,
             'timeout': 30,
@@ -82,8 +53,10 @@ class Config:
                 'format': '%(asctime)s - %(levelname)s - %(message)s',
                 'max_size': 10485760,  # 10MB
                 'backup_count': 5
-            }
+            },
+            'TempMessageForGroupPath': r'src\MessageTemplates\NotificationToGroup.txt'
         }
+
         
         os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
         with open(self.config_path, 'w', encoding='utf-8') as f:
@@ -101,5 +74,19 @@ class Config:
             return self.config[name]
         raise AttributeError(f"Configuration has no attribute '{name}'")
 
+    def read_value(self, key: str, default: Any = None) -> Any:
+        """Method to directly read a config value"""
+        return self.config.get(key, default)
+
+    def set_value(self, key: str, value: Any) -> None:
+        """Method to set a new value in the config"""
+        self.config[key] = value
+        self.save_config()
+
+    def save_config(self) -> None:
+        """Save the updated configuration to the YAML file"""
+        with open(self.config_path, 'w', encoding='utf-8') as f:
+            yaml.dump(self.config, f, default_flow_style=False)
+
 # Create global config instance
-config = Config() 
+config = Config()

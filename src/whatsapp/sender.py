@@ -6,6 +6,10 @@ from pathlib import Path
 from src.core.config import config
 from src.core.logger import logger
 from src.whatsapp.desktop_utils import WhatsAppDesktop
+import urllib.parse
+from datetime import datetime
+from hijri_converter import convert
+import os
 
 class WhatsAppSender:
     def __init__(self):
@@ -46,12 +50,31 @@ class WhatsAppSender:
             contact_name = self._get_contact_name(file_path)
 
             # Prepare message
-            root_path = "https://gizasystems-my.sharepoint.com/personal/mohamed_moselhy_gizasystems_com/Documents/%D9%82%D8%B6%D8%A7%D9%8A%D8%A7%20%D8%A7%D9%84%D8%AA%D8%AD%D9%83%D9%8A%D9%85/%D9%85%D9%86%D8%B8%D9%88%D8%B1%D8%A9%20%D8%AA%D8%AC%D8%B1%D8%A8%D8%A9"
-            Folder_Name = "%D8%AA%D8%AC%D8%B1%D8%A8%D8%A9%201"
-            full_sharepoint_path = root_path + "/" + Folder_Name
-            message = f"New file is ready: {full_sharepoint_path}"
-            if config.message:
-                message = f"{config.message}\n{message}"
+            Folder_Name_Encoded = urllib.parse.quote_plus(contact_name)
+            full_sharepoint_path = config.root_path + "/" + Folder_Name_Encoded
+            #message = f"New file is ready: {full_sharepoint_path}"
+
+            if config.TempMessageForGroupPath:
+                logger.log_info(f"Using custom message template from {os.path.abspath(config.TempMessageForGroupPath)}")
+                with open(os.path.abspath(config.TempMessageForGroupPath), 'r', encoding='utf-8') as file:
+                    # Read file content
+                    lines = file.readlines()
+                    
+                    # Join the lines into a single string
+                    message_content = ''.join(lines)
+                    
+                    # Get today's Gregorian date
+                    today_gregorian = datetime.today()
+                    
+                    # Replace placeholders with actual values
+                    hijri_date = convert.Gregorian(today_gregorian.year, today_gregorian.month, today_gregorian.day).to_hijri()
+                    message_content = message_content.replace('{company_name}', contact_name) \
+                                                   .replace('{memo_date}', f"{hijri_date.day}/{hijri_date.month}/{hijri_date.year}") \
+                                                   .replace('{memo_gregorian_date}', today_gregorian.strftime('%d/%m/%Y')) \
+                                                   .replace('{memo_link}', full_sharepoint_path)
+
+                    # Update the message with the first line of the content
+                    message = f"{message_content}"
 
             # Send notification
             return self.send_message_to_contact(contact_name, message)
