@@ -1,88 +1,70 @@
 # WhatsApp Auto Sender
 
-An automated tool for sending files and messages via WhatsApp Web.
+An automated solution for sending WhatsApp messages based on file system changes.
 
 ## Features
 
-- Automated file sending through WhatsApp Web
-- GUI interface for monitoring and control
-- Configurable folder monitoring
-- Robust error handling and retry mechanisms
-- Detailed logging with rotation
-- Screenshot capture for debugging
+- Automatically send WhatsApp messages to specified groups
+- Monitor folders for file changes
+- Customizable message templates
+- Easy-to-use installer
+- Configurable message intervals
+- Automatic startup option
+
+## System Requirements
+
+- Windows 10 or later (64-bit)
+- WhatsApp Desktop application installed and logged in
+- Minimum 4GB RAM
+- Stable internet connection
 
 ## Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/whatsapp-auto-sender.git
-cd whatsapp-auto-sender
-```
-
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. Configure the application:
-- Copy `config.yaml.example` to `config.yaml`
-- Update the configuration values as needed
-
-## Usage
-
-1. Start the application:
-```bash
-python src/main.py
-```
-
-2. The GUI will appear with the following features:
-- Monitor folder status
-- Start/Stop monitoring
-- Recent activity log
-- Error notifications
-
-3. Place files in the monitored folder to trigger automatic sending
+1. Download `WhatsAppAutoSender-Setup.exe`
+2. Run the installer as administrator
+3. Follow the installation wizard:
+   - Accept the license agreement
+   - Choose installation directory
+   - Configure WhatsApp group name
+   - Set message check interval (60-3600 seconds)
+   - Select folder to monitor
+   - Choose startup options
 
 ## Configuration
 
-Edit `resources/config.yaml` to configure:
-- Monitored folder path
-- Default message
-- Retry settings
-- Logging options
-- Image paths for UI automation
+The application can be configured through:
+1. Installation wizard
+2. `.env` file in the installation directory
+3. Settings menu in the application
 
-## Project Structure
+### Environment Variables
+- `WHATSAPP_GROUP_NAME`: Target WhatsApp group
+- `MESSAGE_INTERVAL`: Check interval in seconds
+- `FOLDER_TO_WATCH`: Directory to monitor for changes
 
-```
-WhatsAppAutoSender/
-├── src/
-│   ├── core/           # Core functionality
-│   ├── whatsapp/       # WhatsApp interaction
-│   ├── gui/            # GUI components
-│   └── main.py         # Entry point
-├── resources/
-│   ├── images/         # UI automation images
-│   └── config.yaml     # Configuration
-├── tests/              # Test files
-├── logs/               # Application logs
-├── error_screenshots/  # Error screenshots
-├── requirements.txt    # Dependencies
-└── README.md          # Documentation
-```
+## Usage
 
-## Contributing
+1. Ensure WhatsApp Desktop is running and logged in
+2. Launch WhatsApp Auto Sender
+3. The application will:
+   - Monitor the specified folder
+   - Send messages according to the template
+   - Create logs in the logs directory
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+## Support
+
+For support, please contact:
+- Email: Mohamed_Moselhy@outlook.com
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Authors
+## Developer
 
-- Mohamed Ibrahim Moselhy - Senior RPA Developer 
+Mohamed Moselhy
+- Email: Mohamed_Moselhy@outlook.com
+
+---
+
+© 2024 Mohamed Moselhy. All rights reserved. 

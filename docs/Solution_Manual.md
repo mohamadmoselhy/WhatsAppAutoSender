@@ -20,28 +20,45 @@ WhatsApp Auto Sender is an automated messaging application designed to send mess
 
 ## Installation Guide
 
-1. Create a new folder for the application (e.g., `WhatsAppAutoSender`)
-2. Copy the following files to this folder:
-   - `WhatsAppAutoSender.exe`
-   - `MessageTemplates` folder
-   - `.env` file (if provided)
-3. Double-click `WhatsAppAutoSender.exe` to run the application
+1. Download the `WhatsAppAutoSender-Setup.exe` installer
+2. Run the installer and follow these steps:
+   - Accept the license agreement
+   - Choose the installation directory (default is recommended)
+   - Select the folder to monitor for new files
+   - Choose whether to create a desktop shortcut
+3. Click "Install" to complete the installation
+
+The installer will:
+- Install the application in the selected directory
+- Create necessary folders and files
+- Set up the folder to monitor
+- Create a desktop shortcut (if selected)
+- Add an uninstaller in Windows Programs and Features
 
 ## Configuration
 
+### Folder Selection
+During installation, you will be prompted to select a folder to monitor. This folder will be checked for new files that trigger message sending. You can change this folder later by:
+1. Open the application
+2. Go to Settings
+3. Click "Change Folder"
+4. Select the new folder to monitor
+
 ### Message Templates
-1. In your application folder, locate the `MessageTemplates` folder
-2. Edit `MessageTemplates/NotificationToGroup.txt` to customize your message template
-3. Use placeholders like `{date}`, `{time}`, etc. for dynamic content
+1. Navigate to the installed application directory
+2. Open the `MessageTemplates` folder
+3. Edit `NotificationToGroup.txt` to customize your message template
+4. Use placeholders like `{date}`, `{time}`, etc. for dynamic content
 
 ### Environment Variables
-If you received a `.env` file:
-1. Place it in the same folder as `WhatsAppAutoSender.exe`
-2. Edit the following variables as needed:
-   ```
-   WHATSAPP_GROUP_NAME=Your Group Name
-   MESSAGE_INTERVAL=300  # Time between messages in seconds
-   ```
+The installer creates a `.env` file with the following settings:
+```
+WHATSAPP_GROUP_NAME=Your Group Name
+MESSAGE_INTERVAL=300  # Time between messages in seconds
+FOLDER_TO_WATCH=path_to_your_selected_folder
+```
+
+You can edit these settings in the `.env` file located in the application directory.
 
 ## Usage Guide
 

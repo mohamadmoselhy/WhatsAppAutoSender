@@ -40,6 +40,40 @@ class Config:
             logger.log_error(e, "Failed to setup paths")
             raise
 
+    def check_folder_path(self, path):
+        """Check if a folder path exists and is accessible"""
+        try:
+            path = Path(path)
+            if not path.exists():
+                return False, "Folder does not exist"
+            if not path.is_dir():
+                return False, "Path is not a directory"
+            # Try to create a test file to check write permissions
+            test_file = path / ".test_write"
+            try:
+                test_file.touch()
+                test_file.unlink()
+                return True, "Folder is accessible and writable"
+            except PermissionError:
+                return False, "No write permission in folder"
+        except Exception as e:
+            return False, f"Error checking folder: {str(e)}"
+
+    def update_folder_path(self, new_path):
+        """Update the folder path to watch"""
+        try:
+            success, message = self.check_folder_path(new_path)
+            if success:
+                self.folder_to_watch = new_path
+                logger.log_info(f"Updated folder to watch: {new_path}")
+                return True, "Folder path updated successfully"
+            else:
+                logger.log_error(f"Failed to update folder path: {message}")
+                return False, message
+        except Exception as e:
+            logger.log_error(e, "Failed to update folder path")
+            return False, str(e)
+
     def _setup_logging(self):
         """Setup logging configuration"""
         try:
