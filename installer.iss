@@ -1,6 +1,6 @@
 #define MyAppName "WhatsApp Auto Sender"
 #define MyAppVersion "1.0"
-#define MyAppPublisher "Your Company"
+#define MyAppPublisher "NextGenAutomation"
 #define MyAppURL "https://yourwebsite.com"
 #define MyAppExeName "WhatsAppAutoSender.exe"
 

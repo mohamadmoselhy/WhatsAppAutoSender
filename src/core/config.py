@@ -3,6 +3,7 @@ Configuration module for WhatsApp Auto Sender
 """
 
 import os
+import sys
 from pathlib import Path
 from src.core.constants import *
 from src.core.logger import logger
@@ -18,10 +19,17 @@ class Config:
     def _setup_paths(self):
         """Setup file system paths"""
         try:
+            # Determine if we're running as an executable
+            if getattr(sys, 'frozen', False):
+                # Running as executable
+                self.base_dir = Path(sys._MEIPASS)
+            else:
+                # Running as script
+                self.base_dir = Path(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
             # Base paths
-            self.base_dir = Path(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-            self.folder_to_watch =  DEFAULT_FOLDER_TO_WATCH
-            self.TempMessageForGroupPath = os.path.abspath(DEFAULT_TEMP_MESSAGE_PATH)
+            self.folder_to_watch = DEFAULT_FOLDER_TO_WATCH
+            self.TempMessageForGroupPath = os.path.join(self.base_dir, DEFAULT_TEMP_MESSAGE_PATH)
             self.root_path = DEFAULT_ROOT_PATH
 
             # Create necessary directories
