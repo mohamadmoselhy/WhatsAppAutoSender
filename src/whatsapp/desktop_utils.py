@@ -196,12 +196,13 @@ class WhatsAppDesktop:
             logger.log_info(f"Message copied to clipboard: {message}")
 
             # Paste the message
-            logger.log_info("Pasting message...")
+            logger.log_info("Focusing on message input box...")
             message_box.click_input()
             time.sleep(CLICK_DELAY)
-            send_keys('^v')
-            time.sleep(CLICK_DELAY)
-            
+
+            logger.log_info("Pasting message into input box...")
+            send_keys('^v')  # Ctrl + V to paste
+            time.sleep(CLICK_DELAY)         
             
             # Find and click the send button
             logger.log_info("Looking for send button...")

@@ -46,8 +46,8 @@ class WhatsAppSender:
     def notify_file_ready(self, file_path: str) -> bool:
         """Notify contact about files being ready"""
         try:
-            # Get contact name and folder name from file path
-            contact_name, folder_name = self._get_contact_name(file_path)
+            # Get contact name and full relative folder path from file path
+            contact_name, folder_name = self._get_contact_name_and_relative_folder(file_path)
             
             # Get all files in the same parent folder
             parent_folder = Path(file_path).parent
@@ -92,18 +92,14 @@ class WhatsAppSender:
             self.whatsapp.close_application()
             raise
 
-    def _get_contact_name(self, file_path: str) -> tuple:
+    def _get_contact_name_and_relative_folder(self, file_path: str) -> tuple:
         """
-        Extract contact name and folder name from file path
-        Returns tuple of (contact_name, folder_name)
+        Extract contact name and full relative folder path from file path
+        Returns tuple of (contact_name, relative_folder_path)
         """
         try:
             path = Path(file_path)
             abs_path = path.absolute()
-            
-            # Get the immediate parent folder name
-            folder_name = path.parent.name
-            
             # Find the contact name (folder after منظورة تجربة)
             parts = abs_path.parts
             try:
@@ -114,10 +110,15 @@ class WhatsAppSender:
                     raise Exception(f"No folder found after 'منظورة تجربة' in path: {file_path}")
             except ValueError:
                 raise Exception(f"Could not find 'منظورة تجربة' in path: {file_path}")
-            
-            logger.log_info(f"Contact name: {contact_name}, Folder name: {folder_name} from path: {file_path}")
-            return contact_name, folder_name
-            
+            # Get the full relative folder path from the main watch folder
+            main_folder = Path(config.folder_to_watch)
+            try:
+                relative_folder = str(path.parent.relative_to(main_folder))
+            except Exception:
+                # fallback to just the parent folder name if relative fails
+                relative_folder = path.parent.name
+            logger.log_info(f"Contact name: {contact_name}, Relative folder: {relative_folder} from path: {file_path}")
+            return contact_name, relative_folder
         except Exception as e:
             logger.log_error(e, f"Error extracting names from file path: {file_path}")
             raise
