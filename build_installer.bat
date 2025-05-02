@@ -1,4 +1,6 @@
 @echo off
+setlocal
+
 echo Building WhatsApp Auto Sender Installer...
 
 REM Check if Inno Setup is installed
@@ -21,6 +23,10 @@ pyinstaller --clean --onefile --windowed --add-data "src;src" --icon=resources/i
 REM Copy MessageTemplates to dist folder
 echo Copying MessageTemplates...
 xcopy /E /I /Y "src\MessageTemplates" "dist\MessageTemplates"
+
+REM Copy resources to dist folder
+echo Copying resources...
+xcopy /E /I /Y "resources" "dist\resources"
 
 REM Create the installer
 echo Creating installer...

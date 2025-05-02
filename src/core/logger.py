@@ -5,6 +5,7 @@ Enhanced logging module with detailed logging capabilities
 import logging
 import os
 from datetime import datetime
+import sys
 from src.core.constants import *
 import time
 
@@ -16,9 +17,17 @@ class Logger:
     def setup_logger(self):
         """Configure the logger with file and console handlers"""
         try:
-            # Create logs directory if it doesn't exist
-            os.makedirs("logs", exist_ok=True)
-            
+            # Determine log directory based on execution context
+            if getattr(sys, 'frozen', False):
+                # Running as a bundled executable: use LOCALAPPDATA
+                base_log_dir = os.path.join(os.environ.get('LOCALAPPDATA', os.path.expanduser('~')), "WhatsAppAutoSender", "logs")
+            else:
+                # Running as script: use project logs/ directory
+                base_log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'logs'))
+
+            os.makedirs(base_log_dir, exist_ok=True)
+            log_file = os.path.join(base_log_dir, f"{datetime.now().strftime('%Y%m%d')}_{LOG_FILE}")
+
             # Set log level
             self.logger.setLevel(LOG_LEVEL)
             
@@ -26,7 +35,6 @@ class Logger:
             formatter = logging.Formatter(LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
             
             # File handler
-            log_file = os.path.join("logs", f"{datetime.now().strftime('%Y%m%d')}_{LOG_FILE}")
             file_handler = logging.FileHandler(log_file, encoding='utf-8')
             file_handler.setFormatter(formatter)
             
@@ -34,11 +42,15 @@ class Logger:
             console_handler = logging.StreamHandler()
             console_handler.setFormatter(formatter)
             
+            # Remove any existing handlers
+            if self.logger.hasHandlers():
+                self.logger.handlers.clear()
+            
             # Add handlers
             self.logger.addHandler(file_handler)
             self.logger.addHandler(console_handler)
             
-            self.log_info("Logger initialized successfully")
+            self.log_info(f"Logger initialized successfully. Log file: {log_file}")
             
         except Exception as e:
             print(f"Failed to initialize logger: {str(e)}")
