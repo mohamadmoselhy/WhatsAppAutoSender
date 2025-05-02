@@ -44,15 +44,20 @@ class WhatsAppSender:
             raise 
 
     def notify_file_ready(self, file_path: str) -> bool:
-        """Notify contact about a file being ready"""
+        """Notify contact about files being ready"""
         try:
-            # Get contact name from file path
-            contact_name = self._get_contact_name(file_path)
-
+            # Get contact name and folder name from file path
+            contact_name, folder_name = self._get_contact_name(file_path)
+            
+            # Get all files in the same parent folder
+            parent_folder = Path(file_path).parent
+            files = []
+            for pattern in config.file_patterns:
+                files.extend(parent_folder.glob(pattern))
+            
             # Prepare message
             Folder_Name_Encoded = urllib.parse.quote(contact_name)
             full_sharepoint_path = config.root_path + "/" + Folder_Name_Encoded
-            #message = f"New file is ready: {full_sharepoint_path}"
 
             if config.TempMessageForGroupPath:
                 logger.log_info(f"Using custom message template from {os.path.abspath(config.TempMessageForGroupPath)}")
@@ -68,39 +73,53 @@ class WhatsAppSender:
                     
                     # Replace placeholders with actual values
                     hijri_date = convert.Gregorian(today_gregorian.year, today_gregorian.month, today_gregorian.day).to_hijri()
-                    message_content = message_content.replace('{company_name}', contact_name) \
-                                                   .replace('{memo_date}', f"{hijri_date.day}/{hijri_date.month}/{hijri_date.year}") \
-                                                   .replace('{memo_gregorian_date}', today_gregorian.strftime('%d/%m/%Y')) \
-                                                   .replace('{memo_link}', full_sharepoint_path)
+                    
+                    # Format the message with bold and underline
+                    formatted_message = message_content.replace('{memo_date}', f"*{hijri_date.day}/{hijri_date.month}/{hijri_date.year}*") \
+                                                    .replace('{memo_gregorian_date}', f"*{today_gregorian.strftime('%d/%m/%Y')}*") \
+                                                    .replace('{folder_name}', f"*_{folder_name}_*") \
+                                                    .replace('{memo_link}', f"*{full_sharepoint_path}*") \
+                                                    .replace('{file_name}', f"*{', '.join(f.name for f in files)}*")
 
-                    # Update the message with the first line of the content
-                    message = f"{message_content}"
+                    # Update the message with the content
+                    message = f"{formatted_message}"
 
             # Send notification
             return self.send_message_to_contact(contact_name, message)
 
         except Exception as e:
-            logger.log_error(e, f"Failed to notify about file {file_path}")
+            logger.log_error(e, f"Failed to notify about files in {file_path}")
             self.whatsapp.close_application()
             raise
 
-    def _get_contact_name(self, file_path: str) -> str:
-        """Extract contact name from file path"""
+    def _get_contact_name(self, file_path: str) -> tuple:
+        """
+        Extract contact name and folder name from file path
+        Returns tuple of (contact_name, folder_name)
+        """
         try:
             path = Path(file_path)
+            abs_path = path.absolute()
             
-            # Case 1: File is in a contact-named folder
-            if path.parent.name != config.folder_to_watch:
-                return path.parent.name
-                
-            # Case 2: File name contains contact name
-            if "_" in path.stem:
-                return path.stem.split("_")[0]
-                
-            # Case 3: Use default contact
-            return False
+            # Get the immediate parent folder name
+            folder_name = path.parent.name
             
-        except Exception:
+            # Find the contact name (folder after منظورة تجربة)
+            parts = abs_path.parts
+            try:
+                index = parts.index("منظورة تجربة")
+                if index + 1 < len(parts):
+                    contact_name = parts[index + 1]
+                else:
+                    raise Exception(f"No folder found after 'منظورة تجربة' in path: {file_path}")
+            except ValueError:
+                raise Exception(f"Could not find 'منظورة تجربة' in path: {file_path}")
+            
+            logger.log_info(f"Contact name: {contact_name}, Folder name: {folder_name} from path: {file_path}")
+            return contact_name, folder_name
+            
+        except Exception as e:
+            logger.log_error(e, f"Error extracting names from file path: {file_path}")
             raise
 
 # Create global sender instance

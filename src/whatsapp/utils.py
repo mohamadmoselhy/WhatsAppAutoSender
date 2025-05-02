@@ -133,7 +133,7 @@ def wait_for_element(selector: str, timeout: Optional[int] = None) -> bool:
         )
         return True
     except TimeoutException:
-        raise
+        raise Exception(f"Timeout waiting for element: {selector}")
 
 def click_element(image_path: str, timeout: int = 10) -> bool:
     """
@@ -147,7 +147,7 @@ def click_element(image_path: str, timeout: int = 10) -> bool:
                 center = pyautogui.center(location)
                 pyautogui.click(center)
                 return True
-        return False
+        raise Exception(f"Could not find or click element: {image_path}")
     except Exception as e:
         logger.log_error(e, f"Error clicking element: {image_path}")
         raise
@@ -197,11 +197,11 @@ def send_file(file_path: str) -> bool:
     try:
         # Click on the attachment button
         if not click_element(config.attachment_button_image):
-            raise RuntimeError("Could not find attachment button")
+            raise Exception("Could not find attachment button")
 
         # Click on the document option
         if not click_element(config.document_button_image):
-            raise RuntimeError("Could not find document button")
+            raise Exception("Could not find document button")
 
         # Type the file path and press enter
         pyautogui.write(file_path)
@@ -239,7 +239,7 @@ def locate_image(image_path: str, timeout: int = 10) -> Optional[Tuple[int, int,
             except pyautogui.ImageNotFoundException:
                 pass
             time.sleep(0.5)
-        return None
+        raise Exception(f"Timeout locating image: {image_path}")
     except Exception as e:
         logger.log_error(e, f"Error locating image: {image_path}")
         raise
@@ -254,113 +254,72 @@ def clear_the_existing_data() -> bool:
         pyautogui.press('backspace')
         return True
     except Exception as e:
-        logger.log_error(e, "Error clearing input field")
+        logger.log_error(e, "Error clearing data")
         raise
 
 def open_whatsapp_chat(contact_name: str) -> bool:
     """
-    Open a WhatsApp chat with the specified contact
-    
-    Args:
-        contact_name: Name of the contact to open chat with
-        
-    Returns:
-        bool: True if chat was opened successfully, False otherwise
+    Open a chat with the specified contact
+    Returns True if successful, False otherwise
     """
     try:
-        # Wait for WhatsApp to load
-        if not wait_for_element("div[data-testid='chat-list']", timeout=60):
-            logger.log_error(None, "WhatsApp did not load properly")
-            return False
+        # Find and click the search box
+        if not click_element(config.search_box_image):
+            raise Exception("Could not find search box")
 
-        # Find and click the search input
-        search_input = WebDriverWait(driver, config.timeout).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-testid='chat-list-search']"))
-        )
-        search_input.click()
-        
-        # Clear any existing text and type the contact name
-        search_input.clear()
-        search_input.send_keys(contact_name)
-        
-        # Wait for search results and click the first result
-        chat = WebDriverWait(driver, config.timeout).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, f"div[title='{contact_name}']"))
-        )
-        chat.click()
-        
-        # Wait for chat to open
-        WebDriverWait(driver, config.timeout).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-testid='conversation-info-header']"))
-        )
-        
+        # Type the contact name
+        if not write_in_field(contact_name):
+            raise Exception("Could not type contact name")
+
+        # Wait for the contact to appear and click it
+        if not click_element(config.contact_image):
+            raise Exception("Could not find contact")
+
         return True
-    except (TimeoutException, NoSuchElementException) as e:
-        logger.log_error(e, f"Failed to open chat with {contact_name}")
+    except Exception as e:
+        logger.log_error(e, f"Error opening chat with {contact_name}")
         raise
 
 def attach_file(file_path: str) -> bool:
     """
     Attach a file to the current chat
-    
-    Args:
-        file_path: Path to the file to attach
-        
-    Returns:
-        bool: True if file was attached successfully, False otherwise
+    Returns True if successful, False otherwise
     """
     try:
-        # Wait for chat to be ready
-        if not wait_for_element("div[data-testid='conversation-compose-box-input']"):
-            logger.log_error(None, "Chat is not ready for file attachment")
-            return False
+        # Click on the attachment button
+        if not click_element(config.attachment_button_image):
+            raise Exception("Could not find attachment button")
 
-        # Click the attachment button
-        attachment_button = WebDriverWait(driver, config.timeout).until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, "span[data-testid='attach-menu']"))
-        )
-        attachment_button.click()
-        
-        # Click the document button
-        document_button = WebDriverWait(driver, config.timeout).until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, "button[aria-label='Document']"))
-        )
-        document_button.click()
-        
-        # Wait for file input and send the file path
-        file_input = WebDriverWait(driver, config.timeout).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='file']"))
-        )
-        file_input.send_keys(file_path)
-        
+        # Click on the document option
+        if not click_element(config.document_button_image):
+            raise Exception("Could not find document button")
+
+        # Type the file path and press enter
+        pyautogui.write(file_path)
+        pyautogui.press('enter')
+
         return True
-    except (TimeoutException, NoSuchElementException) as e:
-        logger.log_error(e, f"Failed to attach file {file_path}")
+    except Exception as e:
+        logger.log_error(e, f"Error attaching file: {file_path}")
         raise
 
 def send_message(message: str) -> bool:
     """
     Send a message in the current chat
-    
-    Args:
-        message: Message text to send
-        
-    Returns:
-        bool: True if message was sent successfully, False otherwise
+    Returns True if successful, False otherwise
     """
     try:
-        # Find the message input box
-        message_box = WebDriverWait(driver, config.timeout).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-testid='conversation-compose-box-input']"))
-        )
-        
-        # Type and send the message
-        message_box.send_keys(message)
-        message_box.send_keys("\n")
-        
+        # Type the message
+        if not write_in_field(message):
+            raise Exception("Could not type message")
+
+        # Press enter to send
+        if not press_enter():
+            raise Exception("Could not send message")
+
         return True
-    except (TimeoutException, NoSuchElementException) as e:
-        logger.log_error(e, "Failed to send message")
+    except Exception as e:
+        logger.log_error(e, "Error sending message")
         raise
 
 def close_whatsapp_tab() -> bool:
@@ -369,9 +328,7 @@ def close_whatsapp_tab() -> bool:
     Returns True if successful, False otherwise
     """
     try:
-        # Press Alt + F4 to close the current window/tab
-        with pyautogui.hold('alt'):
-            pyautogui.press('f4')
+        pyautogui.hotkey('ctrl', 'w')
         return True
     except Exception as e:
         logger.log_error(e, "Error closing WhatsApp tab")
@@ -382,36 +339,25 @@ driver: Optional[webdriver.Chrome] = None
 
 def initialize_driver() -> bool:
     """
-    Initialize the Chrome WebDriver
-    
-    Returns:
-        bool: True if driver was initialized successfully, False otherwise
+    Initialize the Selenium WebDriver
+    Returns True if successful, False otherwise
     """
-    global driver
     try:
-        options = webdriver.ChromeOptions()
-        options.add_argument("--start-maximized")
-        options.add_argument("--disable-notifications")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        
-        driver = webdriver.Chrome(options=options)
+        global driver
+        driver = webdriver.Chrome()
         driver.get("https://web.whatsapp.com")
-        
-        # Wait for WhatsApp to load
-        if not wait_for_qr_scan():
-            logger.log_error(None, "Failed to initialize WhatsApp Web")
-            return False
-            
         return True
     except Exception as e:
-        logger.log_error(e, "Failed to initialize WebDriver")
+        logger.log_error(e, "Error initializing WebDriver")
         raise
 
 def close_driver() -> None:
-    """Close the Chrome WebDriver"""
-    global driver
-    if driver:
-        driver.quit()
-        driver = None 
+    """
+    Close the Selenium WebDriver
+    """
+    try:
+        if driver:
+            driver.quit()
+    except Exception as e:
+        logger.log_error(e, "Error closing WebDriver")
+        raise 

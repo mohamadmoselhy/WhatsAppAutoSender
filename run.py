@@ -42,20 +42,21 @@ def process_file(file_path: str):
                 logger.log_info(f"Successfully sent notification for file: {file_path}")
                 break  # Exit loop on success
             else:
-                logger.log_error(None, f"Failed to send notification for file: {file_path}")
+                error_msg = f"Failed to send notification for file: {file_path}"
+                logger.log_error(None, error_msg)
                 if attempt < max_retries:
                     time.sleep(delay_seconds)  # Wait before retrying
                 else:
-                    logger.log_error(None, f"All {max_retries} attempts failed for file: {file_path}")
                     take_screenshot("Error")  # Take screenshot for debugging
+                    logger.log_error(None, error_msg)  # Log the error but don't raise exception
 
         except Exception as e:
             logger.log_error(e, f"Error processing file {file_path} on attempt {attempt}")
             if attempt < max_retries:
                 time.sleep(delay_seconds)
             else:
-                logger.log_error(e, f"All {max_retries} attempts raised errors for file: {file_path}")
                 take_screenshot("file_check_error")
+                logger.log_error(e, f"All {max_retries} attempts raised errors for file: {file_path}")  # Log the error but don't raise exception
 
 def main():
     """
@@ -88,7 +89,16 @@ def main():
 
     except Exception as e:
         logger.log_error(e, "Error in main function")
-        sys.exit(1)
+        # Don't exit, just log the error and continue running
+        logger.log_info("Application will continue running despite the error")
+        while True:
+            try:
+                time.sleep(1)
+            except KeyboardInterrupt:
+                logger.log_info("Stopping WhatsApp Auto Sender...")
+                if 'watcher' in locals():
+                    watcher.stop()
+                sys.exit(0)
 
 # Entry point of the script
 if __name__ == "__main__":

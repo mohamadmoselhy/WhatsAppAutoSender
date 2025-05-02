@@ -6,6 +6,7 @@ import os
 import time
 from pathlib import Path
 from typing import Callable
+from src.core.config import config
 from src.core.constants import *
 from src.core.logger import logger
 
@@ -42,7 +43,7 @@ class FileWatcher:
                 except Exception as e:
                     logger.log_error(e, "Error in file watcher loop")
                     time.sleep(ERROR_WAIT_TIME)
-                    raise
+                    continue
                     
         except Exception as e:
             logger.log_error(e, "Failed to start file watcher")
@@ -53,13 +54,34 @@ class FileWatcher:
         self.running = False
         logger.log_info("File watcher stopped")
 
-    def _check_files(self):
+    def _is_file_ready(self, file_path: str) -> bool:
+        """Check if a file is ready to be processed (not being written to)"""
+        try:
+            # Try to open the file in exclusive mode
+            with open(file_path, 'rb') as f:
+                return True
+        except IOError:
+            return False
+
+    def _process_file(self, file_path: str) -> bool:
+        """Process a single file"""
+        try:
+            return self.callback(file_path)
+        except Exception as e:
+            logger.log_error(e, f"Error processing file {file_path}")
+            return False
+
+    def _check_files(self) -> None:
         """Check for new files in the directory"""
         try:
             current_time = time.time()
             
-            # First, get all subfolders
-            subfolders = [f for f in self.directory.iterdir() if f.is_dir()]
+            # Recursively get all subfolders
+            subfolders = []
+            for root, dirs, _ in os.walk(self.directory):
+                for dir_name in dirs:
+                    subfolders.append(Path(root) / dir_name)
+            
             logger.log_debug(f"Found {len(subfolders)} subfolders in {self.directory}")
             
             # Check each subfolder
@@ -78,21 +100,29 @@ class FileWatcher:
                                 # Skip if already processed
                                 if str(file_path) in self.processed_files:
                                     continue
-
+                                
                                 # Process the file
                                 logger.log_info(f"Found new file in subfolder: {file_path}")
-                                self.callback(str(file_path))
-                                self.processed_files.add(str(file_path))
-                                logger.log_info(f"File processed successfully: {file_path}")
-
+                                try:
+                                    self.callback(str(file_path))
+                                    self.processed_files.add(str(file_path))
+                                    logger.log_info(f"File processed successfully: {file_path}")
+                                except Exception as e:
+                                    logger.log_error(e, f"Failed to process file: {file_path}")
+                                    # Continue to next file instead of raising the exception
+                                    continue
+                                
                             except Exception as e:
-                                logger.log_error(e, f"Error processing file: {file_path}")
-                                raise
-
+                                logger.log_error(e, f"Error checking file: {file_path}")
+                                # Continue to next file instead of raising the exception
+                                continue
+                            
                 except Exception as e:
                     logger.log_error(e, f"Error checking subfolder: {subfolder}")
-                    raise
-
+                    # Continue to next subfolder instead of raising the exception
+                    continue
+                
         except Exception as e:
-            logger.log_error(e, "Error checking files")
-            raise
+            logger.log_error(e, "Error in file checking process")
+            # Don't raise the exception, just log it and continue
+            return

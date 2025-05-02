@@ -44,7 +44,7 @@ class WhatsAppDesktop:
                     ])
                 except Exception as e:
                     logger.log_error(e, "Failed to launch WhatsApp. Make sure it's installed from Microsoft Store.")
-                    return False
+                    raise
                 
                 # Wait for the window to appear
                 logger.log_info(f"Waiting up to {WAIT_TIME} seconds for WhatsApp to start...")
@@ -59,12 +59,11 @@ class WhatsAppDesktop:
                         time.sleep(1)
                         continue
                 
-                logger.log_error(None, "WhatsApp failed to start")
-                return False
+                raise Exception("WhatsApp failed to start")
             
         except Exception as e:
             logger.log_error(e, "Failed to connect to WhatsApp desktop")
-            return False
+            raise
 
     def close_application(self) -> bool:
         """Close WhatsApp application"""
@@ -87,15 +86,14 @@ class WhatsAppDesktop:
 
         except Exception as e:
             logger.log_error(e, "Failed to close WhatsApp")
-            return False
+            raise
 
     def open_chat(self, contact_name: str) -> bool:
         """Open a chat with the specified contact"""
         try:
             logger.log_info(f"Attempting to open chat with {contact_name}...")
             if not self.main_window:
-                logger.log_error(None, "WhatsApp window not connected")
-                return False
+                raise Exception("WhatsApp window not connected")
 
             # Find the search box
             logger.log_info("Looking for search box...")
@@ -105,8 +103,7 @@ class WhatsAppDesktop:
             )
             
             if not search_box.exists():
-                logger.log_error(None, "Could not find search box")
-                return False
+                raise Exception("Could not find search box")
             
             # Focus and clear the search box
             logger.log_info("Clearing search box...")
@@ -130,8 +127,7 @@ class WhatsAppDesktop:
                 )
                 
                 if not chat_list.exists():
-                    logger.log_error(None, "Could not find chat list")
-                    return False
+                    raise Exception("Could not find chat list")
 
                 # Find the contact
                 logger.log_info(f"Searching for contact: {contact_name}")
@@ -159,24 +155,22 @@ class WhatsAppDesktop:
                         logger.log_info("Chat opened successfully (direct click)")
                         return True
                 
-                logger.log_error(None, f"Could not find contact: {contact_name}")
-                return False
+                raise Exception(f"Could not find contact: {contact_name}")
                 
             except Exception as e:
                 logger.log_error(e, f"Failed to find and click contact: {contact_name}")
-                return False
+                raise
             
         except Exception as e:
             logger.log_error(e, f"Failed to open chat with {contact_name}")
-            return False
+            raise
 
     def send_message(self, message: str) -> bool:
         """Send a message in the current chat"""
         try:
             logger.log_info("Preparing to send message...")
             if not self.main_window:
-                logger.log_error(None, "WhatsApp window not connected")
-                return False
+                raise Exception("WhatsApp window not connected")
 
             # Find the message input box
             logger.log_info("Looking for message input box...")
@@ -186,8 +180,7 @@ class WhatsAppDesktop:
             )
             
             if not message_box.exists():
-                logger.log_error(None, "Could not find message input box")
-                return False
+                raise Exception("Could not find message input box")
                 
             # Focus and clear existing text
             logger.log_info("Clearing message input box...")
@@ -199,6 +192,7 @@ class WhatsAppDesktop:
             # Copy the message to clipboard
             logger.log_info("Copying message to clipboard...")
             pyperclip.copy(message)
+            time.sleep(CLICK_DELAY)  # Wait for clipboard to be ready
             logger.log_info(f"Message copied to clipboard: {message}")
 
             # Paste the message
@@ -208,6 +202,7 @@ class WhatsAppDesktop:
             send_keys('^v')
             time.sleep(CLICK_DELAY)
             
+            
             # Find and click the send button
             logger.log_info("Looking for send button...")
             send_button = self.main_window.child_window(
@@ -216,8 +211,7 @@ class WhatsAppDesktop:
             )
             
             if not send_button.exists():
-                logger.log_error(None, "Could not find send button")
-                return False
+                raise Exception("Could not find send button")
                 
             logger.log_info("Clicking send button...")
             send_button.click_input()
@@ -228,4 +222,4 @@ class WhatsAppDesktop:
             
         except Exception as e:
             logger.log_error(e, "Failed to send message")
-            return False
+            raise
