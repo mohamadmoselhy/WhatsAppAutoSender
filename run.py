@@ -24,81 +24,69 @@ from src.core.logger import logger                   # Custom logger for logging
 from src.core.file_watcher import FileWatcher        # Class that monitors a folder for new files
 from src.whatsapp.sender import WhatsAppSender       # Class responsible for sending WhatsApp messages
 from src.core.screenshot_utils import take_screenshot  # Utility function for taking screenshots on error
+from src.core.constants import MAX_RETRIES, RETRY_DELAY
 
 def process_file(file_path: str):
     """
     Attempts to process a detected file by sending a WhatsApp notification.
-    Retries once if the first attempt fails, and logs the outcome.
+    Retries up to MAX_RETRIES if an exception occurs, and logs the outcome.
     """
-    max_retries = 1               # Number of retry attempts
-    delay_seconds = 3            # Wait time between retries
-
-    for attempt in range(1, max_retries + 1):
+    for attempt in range(1, MAX_RETRIES + 1):
         try:
             logger.log_info(f"Processing file: {file_path} (Attempt {attempt})")
-
-            sender = WhatsAppSender()  # Initialize the WhatsApp sender
-            if sender.notify_file_ready(file_path):  # Try to send the notification
+            sender = WhatsAppSender()
+            if sender.notify_file_ready(file_path):
                 logger.log_info(f"Successfully sent notification for file: {file_path}")
-                break  # Exit loop on success
+                break
             else:
                 error_msg = f"Failed to send notification for file: {file_path}"
                 logger.log_error(None, error_msg)
-                if attempt < max_retries:
-                    time.sleep(delay_seconds)  # Wait before retrying
+                if attempt < MAX_RETRIES:
+                    time.sleep(RETRY_DELAY)
                 else:
-                    take_screenshot("Error")  # Take screenshot for debugging
-                    logger.log_error(None, error_msg)  # Log the error but don't raise exception
-
+                    take_screenshot("Error")
+                    logger.log_error(None, error_msg)
         except Exception as e:
             logger.log_error(e, f"Error processing file {file_path} on attempt {attempt}")
-            if attempt < max_retries:
-                time.sleep(delay_seconds)
+            if attempt < MAX_RETRIES:
+                time.sleep(RETRY_DELAY)
             else:
                 take_screenshot("file_check_error")
-                logger.log_error(e, f"All {max_retries} attempts raised errors for file: {file_path}")  # Log the error but don't raise exception
+                logger.log_error(e, f"All {MAX_RETRIES} attempts raised errors for file: {file_path}")
 
 def main():
     """
     Initializes the folder watcher and keeps the application running indefinitely.
-    Handles creation of the watch folder if it doesn't exist and logs all critical steps.
+    Handles all exceptions gracefully and ensures the application never terminates unexpectedly.
     """
-    try:
-        # Ensure the folder to watch exists
-        if not os.path.exists(config.folder_to_watch):
-            os.makedirs(config.folder_to_watch, exist_ok=True)
-            logger.log_info(f"Created folder: {config.folder_to_watch}")
-
-        # Initialize and start watching the folder
-        watcher = FileWatcher(config.folder_to_watch, process_file)
-        watcher.start()
-
-        logger.log_info("WhatsApp Auto Sender started. Monitoring for files...")
-        logger.log_info(f"Watching folder: {config.folder_to_watch}")
-        logger.log_info("Press Ctrl+C to stop the application")
-
-        # Keep the script running indefinitely
+    while True:
         try:
+            # Ensure the folder to watch exists
+            if not os.path.exists(config.folder_to_watch):
+                os.makedirs(config.folder_to_watch, exist_ok=True)
+                logger.log_info(f"Created folder: {config.folder_to_watch}")
+
+            # Initialize and start watching the folder
+            watcher = FileWatcher(config.folder_to_watch, process_file)
+            watcher.start()
+
+            logger.log_info("WhatsApp Auto Sender started. Monitoring for files...")
+            logger.log_info(f"Watching folder: {config.folder_to_watch}")
+            logger.log_info("Press Ctrl+C to stop the application")
+
+            # Keep the script running indefinitely
             while True:
                 time.sleep(1)
         except KeyboardInterrupt:
-            # Gracefully handle Ctrl+C
             logger.log_info("Stopping WhatsApp Auto Sender...")
-            watcher.stop()
-            sys.exit(0)
-
-    except Exception as e:
-        logger.log_error(e, "Error in main function")
-        # Don't exit, just log the error and continue running
-        logger.log_info("Application will continue running despite the error")
-        while True:
             try:
-                time.sleep(1)
-            except KeyboardInterrupt:
-                logger.log_info("Stopping WhatsApp Auto Sender...")
-                if 'watcher' in locals():
-                    watcher.stop()
-                sys.exit(0)
+                watcher.stop()
+            except Exception:
+                pass
+            sys.exit(0)
+        except Exception as e:
+            logger.log_error(e, "Unhandled exception in main loop. Application will recover and continue running.")
+            time.sleep(5)  # Wait a bit before retrying the main loop
 
 # Entry point of the script
 if __name__ == "__main__":
