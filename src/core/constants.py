@@ -15,7 +15,7 @@ LOG_FILE = "whatsapp_auto_sender.log"
 
 # File Watching Constants
 FILE_CHECK_INTERVAL = 1  # seconds
-MAX_FILE_AGE = 300  # seconds (5 minutes)
+MAX_FILE_AGE = 30  # seconds (5 minutes)
 FILE_PATTERNS = ["*.pdf", "*.doc", "*.docx", "*.xls", "*.xlsx"]
 
 # Error Handling Constants
