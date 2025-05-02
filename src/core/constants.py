@@ -31,4 +31,10 @@ MESSAGE_PLACEHOLDERS = {
     "memo_link": "{memo_link}",
     "file_name": "{file_name}",
     "folder_name": "{folder_name}"
-} 
+}
+
+# Main folder name for contact extraction (update as needed)
+MAIN_WATCH_FOLDER_NAME = "منظورة تجربة"
+
+# Date format for Gregorian date in messages
+GREGORIAN_DATE_FORMAT = "%d/%m/%Y" 
